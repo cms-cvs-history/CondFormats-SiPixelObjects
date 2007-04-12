@@ -5,7 +5,7 @@
   <use name=CondCore/DBOutputService>
 
   <library file=SiPixelFedCablingMapTestWriter.cc name=SiPixelFedCablingMapTestWriter>
-  <flags SEAL_PLUGIN_NAME="SiPixelFedCablingMapTestWriter">
+  <flags EDM_PLUGIN=1>
 </library>
 </environment>
 
@@ -17,7 +17,7 @@
   <use name=CondCore/ESSources>
 
   <library file=SiPixelFedCablingMapAnalyzer.cc name=SiPixelFedCablingMapAnalyzer>
-  <flags SEAL_PLUGIN_NAME="SiPixelFedCablingMapAnalyzer">
+  <flags EDM_PLUGIN=1>
 </library>
 </environment>
 
