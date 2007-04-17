@@ -14,7 +14,6 @@
 
   <use name=CondFormats/DataRecord>
   <use name=CondFormats/SiPixelObjects>
-  <use name=CondCore/ESSources>
 
   <library file=SiPixelFedCablingMapAnalyzer.cc name=SiPixelFedCablingMapAnalyzer>
   <flags EDM_PLUGIN=1>
