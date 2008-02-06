@@ -1,6 +1,7 @@
 #include "CondFormats/SiPixelObjects/interface/FrameConversion.h"
 #include "DataFormats/SiPixelDetId/interface/PixelBarrelName.h"
 #include "DataFormats/SiPixelDetId/interface/PixelEndcapName.h"
+#include "DataFormats/DetId/interface/DetId.h"
 #include "CondFormats/SiPixelObjects/interface/LocalPixel.h"
 
 #include "FWCore/MessageLogger/interface/MessageLogger.h"

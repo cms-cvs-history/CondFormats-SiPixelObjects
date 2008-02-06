@@ -1,5 +1,7 @@
 #include "CondFormats/SiPixelObjects/interface/PixelFEDCabling.h"
 
+#include "DataFormats/SiPixelDetId/interface/PixelModuleName.h"
+#include "CondFormats/SiPixelObjects/interface/PixelFEDLink.h"
 #include "CondFormats/SiPixelObjects/interface/PixelROC.h"
 
 #include <sstream>
