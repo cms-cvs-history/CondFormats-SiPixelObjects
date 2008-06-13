@@ -57,7 +57,25 @@ class PixelIndices {
 	std::cout << " PixelIndices: Error in ROCsInY " 
 	     << theChipsInY <<" "<<theColsInDet<<" "<<ROCSizeInY<<std::endl;
     }
-  } 
+   } 
+   
+  // MLW user defined roc X Y and row and column
+   PixelIndices(const int colsInDet,  const int rowsInDet , const int numROCX, const int numROCY) : 
+     theColsInDet(colsInDet), theRowsInDet (rowsInDet) {
+     
+     theChipsInX = numROCX;//theRowsInDet / ROCSizeInX; // number of ROCs in X
+     theChipsInY = numROCY;//theColsInDet / ROCSizeInY;    // number of ROCs in Y
+
+     if(TP_CHECK_LIMITS) {
+      if(theChipsInX<1 || theChipsInX>maxROCsInX) 
+	std::cout << " PixelIndices: Error in ROCsInX " 
+	     << theChipsInX <<" "<<theRowsInDet<<" "<<ROCSizeInX<<std::endl;
+      if(theChipsInY<1 || theChipsInY>maxROCsInY) 
+	std::cout << " PixelIndices: Error in ROCsInY " 
+	     << theChipsInY <<" "<<theColsInDet<<" "<<ROCSizeInY<<std::endl;
+    }
+  }   
+
   //************************************************************************
   ~PixelIndices() {}
   //***********************************************************************
@@ -167,7 +185,7 @@ class PixelIndices {
 	if(col<0 || col>=(ROCSizeInY*theChipsInY) || row<0 || 
 			     row>=(ROCSizeInX*theChipsInX)) {
 	  std::cout<<"PixelIndices: wrong index 3 "<<std::endl;
-	  return -1;
+	  return -1; 
 	}
       }
 
@@ -176,7 +194,8 @@ class PixelIndices {
       int chipY = col / ROCSizeInY; // col index of the chip 0-7
 
       // Get the ROC id from the 2D index
-      rocId = rocIndex(chipX,chipY); 
+      rocId = rocIndex(chipX,chipY);
+ 
       if(TP_CHECK_LIMITS && (rocId<0 || rocId>=16) ) {
 	std::cout<<"PixelIndices: wrong roc index "<<rocId<<std::endl;
 	return -1;
@@ -203,18 +222,23 @@ class PixelIndices {
   // Calculate a single number ROC index from the 2 ROC indices (coordinates)
   // chipX and chipY.
   // Goes from 0 to 15.
-  inline static int rocIndex(const int chipX, const int chipY) {
+  //inline static 
+  inline int rocIndex(const int chipX, const int chipY) const {
 
     int rocId = -1;
-    if(TP_CHECK_LIMITS) {
-      if(chipX<0 || chipX>=2 ||chipY<0 || chipY>=8) {
-	std::cout<<"PixelChipIndices: wrong index "<<chipX<<" "<<chipY<<std::endl;
-	return -1;
-      }
-    }
-    if(chipX==0) rocId = chipY + 8;  // should be 8-15
-    else if(chipX==1) rocId = 7 - chipY; // should be 0-7
-
+    ///if(TP_CHECK_LIMITS) {
+      //  if(chipX<0 || chipX>=theChipsInX ||chipY<0 || chipY>=theChipsInY) {
+    //std::cout<<"PixelChipIndices: wrong index "<<chipX<<" "<<chipY<<std::endl;
+    //return -1;
+    //}
+    //}
+    //mlw 18X
+    rocId = (chipX*theChipsInY)+chipY;
+    /*old way
+      if(chipX==0) rocId = chipY + 8;  // should be 8-15
+      else if(chipX==1) rocId = 7 - chipY; // should be 0-7
+    */
+    
     if(TP_CHECK_LIMITS) {
       if(rocId < 0 || rocId >= (maxROCsInX*maxROCsInY) ) {
 	std::cout << "PixelIndices: Error in ROC index " << rocId << std::endl;
@@ -226,11 +250,12 @@ class PixelIndices {
   //**************************************************************************
   // Calculate the dcol in ROC from the col in ROC frame.
   // dcols go from 0 to 25.
-  inline static int DColumn(const int colROC) {
+  //inline static 
+    int DColumn(const int colROC) {
 
     int dColumnId = (colROC)/2; // double column 0-25
     if(TP_CHECK_LIMITS) {
-      if(dColumnId<0 || dColumnId>=26) {
+      if(dColumnId<0 || dColumnId>=theColsInDet/2) {
 	std::cout<<"PixelIndices: wrong dcol index  "<<dColumnId<<" "<<colROC<<std::endl;
 	return -1;
       }
@@ -240,8 +265,9 @@ class PixelIndices {
   //*************************************************************************
   // Calcuulate the global dcol index within a module
   // Usefull only forin efficiency calculations.  
-  inline static int DColumnInModule(const int dcol, const int chipIndex) {
-    int dcolInMod = dcol + chipIndex * 26;
+  //inline static 
+    int DColumnInModule(const int dcol, const int chipIndex) {
+    int dcolInMod = dcol + chipIndex * theColsInDet/2;
     return dcolInMod;
   }
 
