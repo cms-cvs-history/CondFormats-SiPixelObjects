@@ -66,8 +66,10 @@ SiPixelCalibConfiguration::SiPixelCalibConfiguration(const pos::PixelCalibConfig
 { // copy constructor that uses the complex object
   fNTriggers = fancyConfig.nTriggersPerPattern();
   std::vector<int> vcalpoints(0);
-  for(short vcalvalue = (short) fancyConfig.scanValueMin(0); vcalvalue<=fancyConfig.scanValueMax(0); vcalvalue+=(short)fancyConfig.scanValueStep(0)){
-    short vcalinput = vcalvalue;
+  std::cout << "scan name = " << fancyConfig.scanName(0) << std::endl;
+  std::vector<uint32_t> vcalpointsuint32 = fancyConfig.scanValues(fancyConfig.scanName(0));
+  for(size_t ical=0; ical<vcalpointsuint32.size(); ++ical){
+    short vcalinput = vcalpointsuint32[ical];
     fVCalValues.push_back(vcalinput);
   }
   // copy row and column patterns
@@ -88,6 +90,7 @@ SiPixelCalibConfiguration::SiPixelCalibConfiguration(const pos::PixelCalibConfig
     }
     fRowPattern.push_back(-1);
   }
+  fMode = fancyConfig.mode();
 }
 
 uint32_t SiPixelCalibConfiguration::nRowPatterns() const{
