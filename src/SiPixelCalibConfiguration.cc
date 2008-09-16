@@ -16,7 +16,7 @@ std::vector<short> SiPixelCalibConfiguration::columnPatternForEvent(const uint32
   uint32_t colpatternnumber = patternnumber%nColumnPatterns();
 
   uint32_t nminuscol=0;
-  for(int icol=0; icol<fColumnPattern.size(); icol++){
+  for(size_t icol=0; icol<fColumnPattern.size(); icol++){
     if(fColumnPattern[icol]==-1)
       nminuscol++;
     else if(nminuscol>colpatternnumber)
@@ -35,7 +35,7 @@ std::vector<short> SiPixelCalibConfiguration::rowPatternForEvent(const uint32_t 
   uint32_t rowpatternnumber = patternnumber/nColumnPatterns();
 
   uint32_t nminusrow=0;
-  for(int irow=0; irow<fRowPattern.size(); irow++){
+  for(size_t irow=0; irow<fRowPattern.size(); irow++){
     if(fRowPattern[irow]==-1)
       nminusrow++;
     else if(nminusrow>rowpatternnumber)
@@ -70,6 +70,8 @@ SiPixelCalibConfiguration::SiPixelCalibConfiguration(const pos::PixelCalibConfig
   std::vector<uint32_t> vcalpointsuint32 = fancyConfig.scanValues(fancyConfig.scanName(0));
   for(size_t ical=0; ical<vcalpointsuint32.size(); ++ical){
     short vcalinput = vcalpointsuint32[ical];
+  
+    std::cout << "Vcal value " << ical << " = " << vcalinput << std::endl;
     fVCalValues.push_back(vcalinput);
   }
   // copy row and column patterns
