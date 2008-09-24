@@ -11,6 +11,7 @@
          </Container >
        </Object >
      </Container >
+     <Primitive column="NUMBEROFEVENTS" name="numberOfEvents_" />
      <Primitive column="RUNNUMBER" name="runNumber_" />
      <Primitive column="TIMEVALUE" name="timeValue_" />
    </Class >
