@@ -53,8 +53,8 @@ bool SiPixelQuality::IsModuleUsable(const uint32_t& detid) const {
      return true;
    std::vector<SiPixelQuality::disabledModuleType>disabledModules = theDisabledModules;
    std::sort(disabledModules.begin(),disabledModules.end(),SiPixelQuality::BadComponentStrictWeakOrdering());
-   std::vector<disabledModuleType>::const_iterator iter = std::lower_bound(theDisabledModules.begin(),theDisabledModules.end(),detid,SiPixelQuality::BadComponentStrictWeakOrdering());
-   if (iter != theDisabledModules.end() && iter->DetID==detid && iter->errorType ==0)
+   std::vector<disabledModuleType>::const_iterator iter = std::lower_bound(disabledModules.begin(),disabledModules.end(),detid,SiPixelQuality::BadComponentStrictWeakOrdering());
+   if (iter != disabledModules.end() && iter->DetID==detid && iter->errorType ==0)
     return false;
   return true;
 }
@@ -77,11 +77,9 @@ bool SiPixelQuality::IsRocBad(const uint32_t& detid, const short& rocNb) const {
     return true;
    std::vector<SiPixelQuality::disabledModuleType>disabledModules = theDisabledModules;
    std::sort(disabledModules.begin(),disabledModules.end(),SiPixelQuality::BadComponentStrictWeakOrdering());
-   std::vector<disabledModuleType>::const_iterator iter = std::lower_bound(theDisabledModules.begin(),theDisabledModules.end(),detid,SiPixelQuality::BadComponentStrictWeakOrdering());
-   if (iter != theDisabledModules.end() && iter->DetID == detid){
-     std::cout<<"iter->BadRocs is: "<<iter->BadRocs<<std::endl;
+   std::vector<disabledModuleType>::const_iterator iter = std::lower_bound(disabledModules.begin(),disabledModules.end(),detid,SiPixelQuality::BadComponentStrictWeakOrdering());
+   if (iter != disabledModules.end() && iter->DetID == detid){
      return ((iter->BadRocs >> rocNb)&0x1);}
-     std::cout<<"iter->BadRocs is: "<<iter->BadRocs<<std::endl;  
   return false;
 }
 
@@ -91,8 +89,8 @@ bool SiPixelQuality::IsRocBad(const uint32_t& detid, const short& rocNb) const {
 short SiPixelQuality::getBadRocs(const uint32_t& detid) const{
   std::vector<SiPixelQuality::disabledModuleType>disabledModules = theDisabledModules;
   std::sort(disabledModules.begin(),disabledModules.end(),SiPixelQuality::BadComponentStrictWeakOrdering());
-  std::vector<disabledModuleType>::const_iterator iter = std::lower_bound(theDisabledModules.begin(),theDisabledModules.end(),detid,SiPixelQuality::BadComponentStrictWeakOrdering());
-  if (iter != theDisabledModules.end() && iter->DetID==detid)
+  std::vector<disabledModuleType>::const_iterator iter = std::lower_bound(disabledModules.begin(),disabledModules.end(),detid,SiPixelQuality::BadComponentStrictWeakOrdering());
+  if (iter != disabledModules.end() && iter->DetID==detid)
     return iter->BadRocs;
   return 0;
 }
