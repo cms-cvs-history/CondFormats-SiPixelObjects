@@ -1,90 +1,141 @@
-#include "CondFormats/SiPixelObjects/interface/SiPixelFrameConverter.h"
-#include "CondFormats/SiPixelObjects/interface/SiPixelFedCablingMap.h"
-
-#include "CondFormats/SiPixelObjects/interface/PixelFEDCabling.h"
-#include "CondFormats/SiPixelObjects/interface/PixelFEDLink.h"
-#include "CondFormats/SiPixelObjects/interface/PixelROC.h"
+#include "CondFormats/SiPixelObjects/interface/FrameConversion.h"
+#include "DataFormats/SiPixelDetId/interface/PixelBarrelName.h"
+#include "DataFormats/SiPixelDetId/interface/PixelEndcapName.h"
+#include "CondFormats/SiPixelObjects/interface/LocalPixel.h"
 
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 
-#include <sstream>
-
 using namespace std;
+using namespace edm;
 using namespace sipixelobjects;
 
-SiPixelFrameConverter::SiPixelFrameConverter(const SiPixelFedCablingMap * map, int fedId)
-  : theFed( *(*map).fed(fedId))
-{ }
-
-
-bool SiPixelFrameConverter::hasDetUnit(uint32_t rawId) const
+FrameConversion::FrameConversion( const PixelBarrelName & name, int rocIdInDetUnit)
 {
-  for (int idxLink = 1; idxLink <= theFed.numberOfLinks(); idxLink++) {
-    const PixelFEDLink * link = theFed.link(idxLink);
-    if (!link) continue;
-    int numberOfRocs = link->numberOfROCs();
-    for(int idxRoc = 1; idxRoc <= numberOfRocs; idxRoc++) {
-      const PixelROC * roc = link->roc(idxRoc);
-      if (!roc) continue;
-      if (rawId == roc->rawId() ) return true;
+  int slopeRow =0;
+  int slopeCol = 0;
+  int  rowOffset = 0;
+  int  colOffset = 0; 
+  if (name.isHalfModule() ) {
+    slopeRow = -1; 
+    slopeCol = 1;
+    rowOffset = LocalPixel::numRowsInRoc-1;
+    colOffset = rocIdInDetUnit * LocalPixel::numColsInRoc; 
+  } else {
+    if (rocIdInDetUnit <8) {
+      slopeRow = -1;
+      slopeCol = 1;
+      rowOffset = 2*LocalPixel::numRowsInRoc-1;
+      colOffset = rocIdInDetUnit * LocalPixel::numColsInRoc; 
+    } else {
+      slopeRow = 1;
+      slopeCol = -1;
+      rowOffset = 0;
+      colOffset = (16-rocIdInDetUnit)*LocalPixel::numColsInRoc-1; 
     }
-  }
-  return false;
+  } 
+
+  //
+  // FIX for negative barrel (not inverted modules)
+  //
+  PixelBarrelName::Shell shell = name.shell();
+  if (shell == PixelBarrelName::mO || shell == PixelBarrelName::mI) {
+    slopeRow *= -1;
+    slopeCol *= -1;
+    colOffset = 8*LocalPixel::numColsInRoc-colOffset-1;
+    switch(name.moduleType()) {
+      //case(PixelModuleName::v1x8) : { rowOffset =   LocalPixel::numRowsInRoc-rowOffset-1; break; }
+      case(PixelModuleName::v1x8) : { slopeRow = -1; break; } // d.k. 23/10/08
+      default:                      { rowOffset = 2*LocalPixel::numRowsInRoc-rowOffset-1; break; }
+    }
+  } 
+
+  theRowConversion      = LinearConversion(rowOffset,slopeRow);
+  theCollumnConversion =  LinearConversion(colOffset, slopeCol);
+
 }
-
-
-int SiPixelFrameConverter::toDetector(const ElectronicIndex & cabling, DetectorIndex & detector) const
+FrameConversion::FrameConversion( const PixelEndcapName & name, int rocIdInDetUnit)
 {
-  const PixelFEDLink * link = theFed.link( cabling.link);
-  if (!link) {
-    stringstream stm;
-    stm << "FED shows no link of id= " << cabling.link;
-    LogDebug("SiPixelFrameConverter") << stm.str();
-    return 1;
-  }
+  int slopeRow =0;
+  int slopeCol = 0;
+  int  rowOffset = 0;
+  int  colOffset = 0; 
 
-  const PixelROC * roc = link->roc(cabling.roc);
-  if (!roc) {
-    stringstream stm;
-    stm << "Link=" <<  cabling.link << " shows no ROC with id=" << cabling.roc;
-    LogDebug("SiPixelFrameConverter") << stm.str();
-    return 2;
-  }
-
-  LocalPixel::DcolPxid local = { cabling.dcol, cabling.pxid };
-  if (!local.valid()) return 3;
-
-  GlobalPixel global = roc->toGlobal( LocalPixel(local) ); 
-  detector.rawId = roc->rawId();
-  detector.row   = global.row;
-  detector.col   = global.col;
-
-  return 0;
-}
-
-
-int SiPixelFrameConverter::toCabling(ElectronicIndex & cabling, const DetectorIndex & detector) const
-{
-  for (int idxLink = 1; idxLink <= theFed.numberOfLinks(); idxLink++) {
-    const PixelFEDLink * link = theFed.link(idxLink);
-    int linkid = link->id();
-    int numberOfRocs = link->numberOfROCs();
-
-    for(int idxRoc = 1; idxRoc <= numberOfRocs; idxRoc++) {
-      const PixelROC * roc = link->roc(idxRoc);
-      if (detector.rawId == roc->rawId() ) {
-        GlobalPixel global = {detector.row, detector.col};
-//LogTrace("")<<"GLOBAL PIXEL: row=" << global.row <<" col="<< global.col;
-        LocalPixel local = roc->toLocal(global);
-// LogTrace("")<<"LOCAL PIXEL: dcol =" <<  local.dcol()<<" pxid="<<  local.pxid()<<" inside: " <<local.valid();
-        if(!local.valid()) continue; 
-        ElectronicIndex cabIdx = {linkid, idxRoc, local.dcol(), local.pxid()};
-        cabling = cabIdx;
-        return 0;
+  if (name.pannelName()==1) {
+    if (name.plaquetteName()==1) {
+      slopeRow = 1;
+      slopeCol = -1;
+      rowOffset = 0;
+      colOffset = (1+rocIdInDetUnit)*LocalPixel::numColsInRoc-1;
+    } else if (name.plaquetteName()==2) {
+      if (rocIdInDetUnit <3) {
+        slopeRow = -1;
+        slopeCol = 1;
+        rowOffset = 2*LocalPixel::numRowsInRoc-1;
+        colOffset = rocIdInDetUnit*LocalPixel::numColsInRoc;
+      } else {
+        slopeRow = 1;
+        slopeCol = -1;
+        rowOffset = 0;
+        colOffset = (6-rocIdInDetUnit)*LocalPixel::numColsInRoc-1;
       }
+    } else if (name.plaquetteName()==3) {
+      if (rocIdInDetUnit <4) {
+        slopeRow = -1;
+        slopeCol = 1;
+        rowOffset = 2*LocalPixel::numRowsInRoc-1;
+        colOffset = rocIdInDetUnit*LocalPixel::numColsInRoc;
+      } else {
+        slopeRow = 1;
+        slopeCol = -1;
+        rowOffset = 0;
+        colOffset = (8-rocIdInDetUnit)*LocalPixel::numColsInRoc-1;
+      }
+    } else if (name.plaquetteName()==4) {
+      slopeRow = -1;
+      slopeCol = 1;
+      rowOffset = LocalPixel::numRowsInRoc-1;
+      colOffset = rocIdInDetUnit*LocalPixel::numColsInRoc;
+    }
+  } else {
+    if (name.plaquetteName()==1) {
+      if (rocIdInDetUnit <3) {
+        slopeRow = 1;
+        slopeCol = -1;
+        rowOffset = 0;
+        colOffset = (3-rocIdInDetUnit)*LocalPixel::numColsInRoc-1;
+      } else {
+        slopeRow = -1;
+        slopeCol = 1;
+        colOffset = (rocIdInDetUnit-3)*LocalPixel::numColsInRoc;
+        rowOffset = 2*LocalPixel::numRowsInRoc-1;
+      } 
+    } else if (name.plaquetteName()==2) {
+      if (rocIdInDetUnit <4) {
+        slopeRow = 1;
+        slopeCol = -1;
+        rowOffset = 0;
+        colOffset = (4-rocIdInDetUnit)*LocalPixel::numColsInRoc-1;
+      } else {
+        slopeRow = -1;
+        slopeCol = 1;
+        colOffset = (rocIdInDetUnit-4)*LocalPixel::numColsInRoc;
+        rowOffset = 2*LocalPixel::numRowsInRoc-1;
+      } 
+    } else if (name.plaquetteName()==3) {
+      if (rocIdInDetUnit <5) {
+        slopeRow = 1;
+        slopeCol = -1;
+        rowOffset = 0;
+        colOffset = (5-rocIdInDetUnit)*LocalPixel::numColsInRoc-1;
+      } else {
+        slopeRow = -1;
+        slopeCol = 1;
+        colOffset = (rocIdInDetUnit-5)*LocalPixel::numColsInRoc;
+        rowOffset = 2*LocalPixel::numRowsInRoc-1;
+      } 
     }
   }
-  // proper unit not found, thrown exception
-  return 1;
-}
 
+  theRowConversion =  LinearConversion(rowOffset,slopeRow);
+  theCollumnConversion =  LinearConversion(colOffset, slopeCol);
+}
