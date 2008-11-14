@@ -1,7 +1,5 @@
 <environment>
 
-  <use name=CondFormats/DataRecord>
-  <use name=CondFormats/SiPixelObjects>
   <use name=CondCore/DBOutputService>
 
   <library file=SiPixelFedCablingMapTestWriter.cc name=SiPixelFedCablingMapTestWriter>
@@ -11,10 +9,8 @@
 
 
 <environment>
-
   <use name=CondFormats/DataRecord>
   <use name=CondFormats/SiPixelObjects>
-
   <library file=SiPixelFedCablingMapAnalyzer.cc name=SiPixelFedCablingMapAnalyzer>
   <flags EDM_PLUGIN=1>
 </library>
