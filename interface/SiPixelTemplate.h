@@ -1,5 +1,5 @@
 //
-//  SiPixelTemplate.h (v5.00)
+//  SiPixelTemplate.h (v5.01)
 //
 //  Add goodness-of-fit info and spare entries to templates, version number in template header, more error checking
 //  Add correction for (Q_F-Q_L)/(Q_F+Q_L) bias
@@ -25,6 +25,7 @@
 //  Change interpolate method to return false boolean if track angles are outside of range
 //  Add template info and method for truncation information
 //  Change to allow template sizes to be changed at compile time
+//  Fix bug in track angle checking
 //
 // Created by Morris Swartz on 10/27/06.
 // Copyright 2006 __TheJohnsHopkinsUniversity__. All rights reserved.
@@ -251,6 +252,7 @@ class SiPixelTemplate {
   float cotb_current;       //!< current cot beta
   float abs_cotb;           //!< absolute value of cot beta
   bool fpix_current;        //!< current pix detector (false for BPix, true for FPix)
+  bool success;             //!< true if cotalpha, cotbeta are inside of the acceptance (dynamically loaded)
   
   
   // Keep results of last interpolation to return through member functions

@@ -1,5 +1,5 @@
 //
-//  SiPixelTemplate.cc  Version 5.00 
+//  SiPixelTemplate.cc  Version 5.01 
 //
 //  Add goodness-of-fit info and spare entries to templates, version number in template header, more error checking
 //  Add correction for (Q_F-Q_L)/(Q_F+Q_L) bias
@@ -27,6 +27,7 @@
 //  Change interpolate method to return false boolean if track angles are outside of range
 //  Add template info and method for truncation information
 //  Change to allow template sizes to be changed at compile time
+//  Fix bug in track angle checking
 //
 //  Created by Morris Swartz on 10/27/06.
 //  Copyright 2006 __TheJohnsHopkinsUniversity__. All rights reserved.
@@ -678,7 +679,6 @@ bool SiPixelTemplate::interpolate(int id, bool fpix, float cotalpha, float cotbe
     int i, j, ind;
 	int ilow, ihigh, iylow, iyhigh, Ny, Nxx, Nyx, imidy, imaxx;
 	float yratio, yxratio, xxratio, sxmax, qcorrect, symax;
-	bool success;
 //	std::vector <float> xrms(4), xgsig(4), xrmsc2m(4), xgsigc2m(4);
 	std::vector <float> chi2xavg(4), chi2xmin(4);
 
@@ -687,7 +687,7 @@ bool SiPixelTemplate::interpolate(int id, bool fpix, float cotalpha, float cotbe
 
 if(id != id_current || fpix != fpix_current || cotalpha != cota_current || cotbeta != cotb_current) {
 
-	fpix_current = fpix; cota_current = cotalpha; cotb_current = cotbeta;
+	fpix_current = fpix; cota_current = cotalpha; cotb_current = cotbeta; success = true;
 	
 	if(id != id_current) {
 
@@ -705,7 +705,7 @@ if(id != id_current || fpix != fpix_current || cotalpha != cota_current || cotbe
 	    }
      }
 	 
-	 assert(index_id >= 0 && index_id < thePixelTemp.size());
+	assert(index_id >= 0 && index_id < thePixelTemp.size());
 	 
 // Interpolate the absolute value of cot(beta)     
     
@@ -722,10 +722,6 @@ if(id != id_current || fpix != fpix_current || cotalpha != cota_current || cotbe
 // Copy the pseudopixel signal size to the private variable     
     
     ps50 = thePixelTemp[index_id].head.s50;
-
-// success flags whether or not the track angles are inside the interpolation range
-    
-    success = true;
 	
 // Decide which template (FPix or BPix) to use 
 
