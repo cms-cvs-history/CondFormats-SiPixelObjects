@@ -6,7 +6,6 @@
 #include "CondFormats/SiPixelObjects/interface/SiPixelGainCalibration.h"
 #include "CondFormats/SiPixelObjects/interface/SiPixelGainCalibrationForHLT.h"
 #include "CondFormats/SiPixelObjects/interface/SiPixelGainCalibrationOffline.h"
-#include "CondFormats/SiPixelObjects/interface/SiPixelTemplate.h"
 #include "CondFormats/SiPixelObjects/interface/SiPixelTemplateDBObject.h"
 #include "CondFormats/SiPixelObjects/interface/SiPixelLorentzAngle.h"
 #include "CondFormats/SiPixelObjects/interface/SiPixelPerformanceSummary.h"
@@ -40,6 +39,9 @@ namespace {
  
     std::vector<SiPixelQuality::disabledModuleType>::iterator p9;
     std::vector<SiPixelQuality::disabledModuleType>::const_iterator p10;
+
+    PixelDCSObject<bool>::Item tempItem0;
+    PixelDCSObject<float>::Item tempItem1;
+    PixelDCSObject<CaenChannel>::Item tempItem2;
   };
 }
-
