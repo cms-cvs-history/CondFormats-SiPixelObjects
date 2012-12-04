@@ -103,7 +103,7 @@ void SiPixelGainCalibration::setData(float ped, float gain, std::vector<char>& v
   float theEncodedGain=0;
   float theEncodedPed=0;
   if(!isDeadPixel && !isNoisyPixel){
-    theEncodedPed = encodeGain(gain);
+    theEncodedGain = encodeGain(gain);
     theEncodedPed = encodePed (ped);
   }
 
